@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Input;
+using StockFinder.util;
 
 namespace StockFinder.viewmodel
 {
@@ -14,35 +15,19 @@ namespace StockFinder.viewmodel
         public OhlcDataSeries<DateTime, double> StockGraphOHLC { get; private set; }
         public XyDataSeries<DateTime, double> StockGraphMA { get; private set; }
 
-        private CommandImport _commandImport;
-        public ICommand CmdImport { get { return _commandImport ?? (_commandImport = new CommandImport(this)); } }
+        public ICommand CmdImport { get; private set; }
 
         public ViewModel()
         {
             StockTable = new ObservableCollection<Stock>();
             StockGraphOHLC = new OhlcDataSeries<DateTime, double>();
             StockGraphMA = new XyDataSeries<DateTime, double>();
+            CmdImport = new RelayCommand(import);
         }
 
-    }
 
-    public class CommandImport : ICommand
-    {
-        private ViewModel _vm;
-
-        public CommandImport(ViewModel vm)
-        {
-            _vm = vm;
-        }
-
-        public event EventHandler CanExecuteChanged;
-
-        public bool CanExecute(object parameter)
-        {
-            return true;
-        }
-
-        public void Execute(object parameter)
+        // command implementation
+        private void import()
         {
             using (var sr = new StreamReader("stock_data_week.csv"))
             {
@@ -51,22 +36,24 @@ namespace StockFinder.viewmodel
                     while (cr.Read())
                     {
                         var r = cr.GetRecord<Stock>();
-                        _vm.StockTable.Add(r);
+                        StockTable.Add(r);
                     }
                 }
             }
-            _vm.StockGraphOHLC.Append(
-                from x in _vm.StockTable select x.Date,
-                from x in _vm.StockTable select x.Open,
-                from x in _vm.StockTable select x.High,
-                from x in _vm.StockTable select x.Low,
-                from x in _vm.StockTable select x.Close
+            StockGraphOHLC.Append(
+                from x in StockTable select x.Date,
+                from x in StockTable select x.Open,
+                from x in StockTable select x.High,
+                from x in StockTable select x.Low,
+                from x in StockTable select x.Close
             );
-            _vm.StockGraphMA.Append(
-                from x in _vm.StockTable select x.Date,
-                from x in _vm.StockTable select x.Close
+            StockGraphMA.Append(
+                from x in StockTable select x.Date,
+                from x in StockTable select x.Close
             );
+
         }
+
     }
 
     public class Stock
