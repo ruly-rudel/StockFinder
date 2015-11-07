@@ -26,17 +26,16 @@ namespace StockFinder.viewmodel
         public ViewModel()
         {
             CmdImport = new RelayCommand(import);
+            initialize();
         }
 
 
-        // command implementation
-        private void import()
+        private void initialize()
         {
             StockTable.Clear();
             StockGraphMA.Clear();
             StockGraphOHLC.Clear();
 
-            _m.Import("stock_data_week.csv");
             foreach (var i in _m.StockTable)
             {
                 StockTable.Add(i);
@@ -52,7 +51,14 @@ namespace StockFinder.viewmodel
                 from x in StockTable select x.Date,
                 from x in StockTable select x.Close
             );
+        }
 
+        // command implementation
+        private void import()
+        {
+            _m.Import("stock_data_week.csv", 0);
+
+            initialize();
         }
     }
 }
