@@ -1,0 +1,2 @@
+# StockFinder
+Stock finder appilication.
