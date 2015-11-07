@@ -6,22 +6,25 @@ using System.IO;
 using System.Linq;
 using System.Windows.Input;
 using StockFinder.util;
+using StockFinder.model;
 
 namespace StockFinder.viewmodel
 {
     public class ViewModel
     {
-        public ObservableCollection<Stock> StockTable { get; private set; }
-        public OhlcDataSeries<DateTime, double> StockGraphOHLC { get; private set; }
-        public XyDataSeries<DateTime, double> StockGraphMA { get; private set; }
+        // property
+        public ObservableCollection<Stock> StockTable { get; } = new ObservableCollection<Stock>();
+        public OhlcDataSeries<DateTime, double> StockGraphOHLC { get; } = new OhlcDataSeries<DateTime, double>();
+        public XyDataSeries<DateTime, double> StockGraphMA { get; } = new XyDataSeries<DateTime, double>();
 
         public ICommand CmdImport { get; private set; }
 
+        // member variables
+        private Model _m = ModelSingleton.Instance;
+
+        // constructor
         public ViewModel()
         {
-            StockTable = new ObservableCollection<Stock>();
-            StockGraphOHLC = new OhlcDataSeries<DateTime, double>();
-            StockGraphMA = new XyDataSeries<DateTime, double>();
             CmdImport = new RelayCommand(import);
         }
 
@@ -29,16 +32,14 @@ namespace StockFinder.viewmodel
         // command implementation
         private void import()
         {
-            using (var sr = new StreamReader("stock_data_week.csv"))
+            StockTable.Clear();
+            StockGraphMA.Clear();
+            StockGraphOHLC.Clear();
+
+            _m.Import("stock_data_week.csv");
+            foreach (var i in _m.StockTable)
             {
-                using (var cr = new CsvReader(sr))
-                {
-                    while (cr.Read())
-                    {
-                        var r = cr.GetRecord<Stock>();
-                        StockTable.Add(r);
-                    }
-                }
+                StockTable.Add(i);
             }
             StockGraphOHLC.Append(
                 from x in StockTable select x.Date,
@@ -53,15 +54,5 @@ namespace StockFinder.viewmodel
             );
 
         }
-
-    }
-
-    public class Stock
-    {
-        public DateTime Date { get; set; }
-        public double Open { get; set; }
-        public double High { get; set; }
-        public double Low { get; set; }
-        public double Close { get; set; }
     }
 }
