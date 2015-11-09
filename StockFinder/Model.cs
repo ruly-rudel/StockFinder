@@ -19,20 +19,51 @@ namespace StockFinder.model
 
     public class Model
     {
-        public List<Stock> StockTable { get; private set; }
-
-        public Model()
+        public IEnumerable<Stock> GetStockTable()
         {
             using (var db = new StockContext())
             {
-                StockTable = (from s in db.Stocks select s).ToList();
+                return (from s in db.Stocks orderby s.Date ascending select s).ToList();
             }
         }
 
+        public IEnumerable<Stock> GetStockTable(int n)
+        {
+            using (var db = new StockContext())
+            {
+                return (from r in (from s in db.Stocks orderby s.Date descending select s).Take(n) orderby r.Date ascending select r).ToList();
+            }
+        }
+
+        public IEnumerable<StockSingleValue> GetStockMovingAverage(int span, int n)
+        {
+            Stock[] st;
+            using (var db = new StockContext())
+            {
+                st = (from r in (from s in db.Stocks orderby s.Date descending select s).Take(n + span - 1) orderby r.Date ascending select r).ToArray();
+            }
+
+            StockSingleValue[] ssv = new StockSingleValue[n];
+            for(int i = 0; i < n; i++)
+            {
+                double sum = 0;
+                for(int j = 0; j < span; j++)
+                {
+                    sum += st[i + j].Close;
+                }
+                ssv[i] = new StockSingleValue
+                {
+                    Date = st[i + span - 1].Date,
+                    Value = sum / span
+                };
+            }
+
+            return ssv;
+        }
+
+
         public void Import(string n, int code)
         {
-            StockTable.Clear();
-
             using (var db = new StockContext())
             using (var sr = new StreamReader(n))
             using (var cr = new CsvReader(sr))
@@ -54,8 +85,6 @@ namespace StockFinder.model
                     db.Stocks.Add(d);
                 }
                 db.SaveChanges();
-
-                StockTable = (from s in db.Stocks select s).ToList();
             }
 
 
@@ -93,5 +122,11 @@ namespace StockFinder.model
         public double Low { get; set; }
         public double Close { get; set; }
         public double Volume { get; set; }
+    }
+
+    public class StockSingleValue
+    {
+        public DateTime Date { get; set; }
+        public double Value { get; set; }
     }
 }

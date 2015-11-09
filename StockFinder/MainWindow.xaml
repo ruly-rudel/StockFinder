@@ -53,7 +53,8 @@
 
                 <s:SciStockChart.RenderableSeries>
                     <s:FastCandlestickRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphOHLC}"/>
-                    <s:FastLineRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphMA}" />
+                    <s:FastLineRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphMA30}" />
+                    <s:FastLineRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphMA10}" />
                 </s:SciStockChart.RenderableSeries>
 
             </s:SciStockChart>

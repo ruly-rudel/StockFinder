@@ -15,7 +15,8 @@ namespace StockFinder.viewmodel
         // property
         public ObservableCollection<Stock> StockTable { get; } = new ObservableCollection<Stock>();
         public OhlcDataSeries<DateTime, double> StockGraphOHLC { get; } = new OhlcDataSeries<DateTime, double>();
-        public XyDataSeries<DateTime, double> StockGraphMA { get; } = new XyDataSeries<DateTime, double>();
+        public XyDataSeries<DateTime, double> StockGraphMA30 { get; } = new XyDataSeries<DateTime, double>();
+        public XyDataSeries<DateTime, double> StockGraphMA10 { get; } = new XyDataSeries<DateTime, double>();
 
         public ICommand CmdImport { get; private set; }
 
@@ -33,10 +34,11 @@ namespace StockFinder.viewmodel
         private void initialize()
         {
             StockTable.Clear();
-            StockGraphMA.Clear();
+            StockGraphMA30.Clear();
+            StockGraphMA10.Clear();
             StockGraphOHLC.Clear();
 
-            foreach (var i in _m.StockTable)
+            foreach (var i in _m.GetStockTable(100))
             {
                 StockTable.Add(i);
             }
@@ -47,9 +49,17 @@ namespace StockFinder.viewmodel
                 from x in StockTable select x.Low,
                 from x in StockTable select x.Close
             );
-            StockGraphMA.Append(
-                from x in StockTable select x.Date,
-                from x in StockTable select x.Close
+
+            var ssa = _m.GetStockMovingAverage(30, 100);
+            StockGraphMA30.Append(
+                from x in ssa select x.Date,
+                from x in ssa select x.Value
+            );
+
+            var ssa10 = _m.GetStockMovingAverage(10, 100);
+            StockGraphMA10.Append(
+                from x in ssa10 select x.Date,
+                from x in ssa10 select x.Value
             );
         }
 
