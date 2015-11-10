@@ -15,6 +15,7 @@ namespace StockFinder.viewmodel
         // property
         public ObservableCollection<Stock> StockTable { get; } = new ObservableCollection<Stock>();
         public OhlcDataSeries<DateTime, double> StockGraphOHLC { get; } = new OhlcDataSeries<DateTime, double>();
+        public XyDataSeries<DateTime, double> StockGraphVolume { get; } = new XyDataSeries<DateTime, double>();
         public XyDataSeries<DateTime, double> StockGraphMA30 { get; } = new XyDataSeries<DateTime, double>();
         public XyDataSeries<DateTime, double> StockGraphMA10 { get; } = new XyDataSeries<DateTime, double>();
 
@@ -36,6 +37,7 @@ namespace StockFinder.viewmodel
             StockTable.Clear();
             StockGraphMA30.Clear();
             StockGraphMA10.Clear();
+            StockGraphVolume.Clear();
             StockGraphOHLC.Clear();
 
             foreach (var i in _m.GetStockTable(100))
@@ -48,6 +50,11 @@ namespace StockFinder.viewmodel
                 from x in StockTable select x.High,
                 from x in StockTable select x.Low,
                 from x in StockTable select x.Close
+            );
+
+            StockGraphVolume.Append(
+                from x in StockTable select x.Date,
+                from x in StockTable select x.Volume
             );
 
             var ssa = _m.GetStockMovingAverage(30, 100);

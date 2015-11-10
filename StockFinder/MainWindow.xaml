@@ -36,7 +36,7 @@
                         <Setter Property="DrawMajorBands" Value="True"/>
                         <Setter Property="MinorsPerMajor" Value="5"/>
                         <Setter Property="TextFormatting" Value="dd MMM yyyy"/>
-                        <Setter Property="GrowBy" Value="0, 0.1"/>
+                        <Setter Property="GrowBy" Value="0, 0"/>
                     </Style>
                 </s:SciStockChart.XAxisStyle>
 
@@ -51,10 +51,16 @@
                     </Style>
                 </s:SciStockChart.YAxisStyle>
 
+                <s:SciStockChart.YAxes>
+                    <s:NumericAxis Id="RightAxis" AxisAlignment="Right" GrowBy="0.3, 0.0" />
+                    <s:NumericAxis Id="LeftAxis" AxisAlignment="Left" GrowBy="0.0, 3.0" />
+                </s:SciStockChart.YAxes>
+
                 <s:SciStockChart.RenderableSeries>
-                    <s:FastCandlestickRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphOHLC}"/>
-                    <s:FastLineRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphMA30}" />
-                    <s:FastLineRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphMA10}" />
+                    <s:FastCandlestickRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphOHLC}" YAxisId="RightAxis"/>
+                    <s:FastLineRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphMA30}" YAxisId="RightAxis"/>
+                    <s:FastLineRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphMA10}" YAxisId="RightAxis"/>
+                    <s:FastColumnRenderableSeries DataSeries="{Binding StockGraphVolume}" YAxisId="LeftAxis"/>
                 </s:SciStockChart.RenderableSeries>
 
             </s:SciStockChart>
