@@ -18,6 +18,7 @@ namespace StockFinder.viewmodel
         public XyDataSeries<DateTime, double> StockGraphVolume { get; } = new XyDataSeries<DateTime, double>();
         public XyDataSeries<DateTime, double> StockGraphMA30 { get; } = new XyDataSeries<DateTime, double>();
         public XyDataSeries<DateTime, double> StockGraphMA10 { get; } = new XyDataSeries<DateTime, double>();
+        public XyDataSeries<DateTime, double> StockGraphMin { get; } = new XyDataSeries<DateTime, double>();
 
         public ICommand CmdImport { get; private set; }
 
@@ -37,10 +38,13 @@ namespace StockFinder.viewmodel
             StockTable.Clear();
             StockGraphMA30.Clear();
             StockGraphMA10.Clear();
+            StockGraphMin.Clear();
             StockGraphVolume.Clear();
             StockGraphOHLC.Clear();
 
-            foreach (var i in _m.GetStockTable(100))
+            int n = 200;
+
+            foreach (var i in _m.GetStockTable(n))
             {
                 StockTable.Add(i);
             }
@@ -57,17 +61,32 @@ namespace StockFinder.viewmodel
                 from x in StockTable select x.Volume
             );
 
-            var ssa = _m.GetStockMovingAverage(30, 100);
-            StockGraphMA30.Append(
-                from x in ssa select x.Date,
-                from x in ssa select x.Value
-            );
+            var ssa = _m.GetStockMovingAverage(30, n);
+            if(ssa != null)
+            {
+                StockGraphMA30.Append(
+                    from x in ssa select x.Date,
+                    from x in ssa select x.Value
+                );
+            }
 
-            var ssa10 = _m.GetStockMovingAverage(10, 100);
-            StockGraphMA10.Append(
-                from x in ssa10 select x.Date,
-                from x in ssa10 select x.Value
-            );
+            var ssa10 = _m.GetStockMovingAverage(10, n);
+            if(ssa10 != null)
+            {
+                StockGraphMA10.Append(
+                    from x in ssa10 select x.Date,
+                    from x in ssa10 select x.Value
+                );
+            }
+
+            var min = _m.GetStockSupportTrend(n);
+            if(min.Count() > 0)
+            {
+                StockGraphMin.Append(
+                    from x in min select x.Date,
+                    from x in min select x.Value
+                );
+            }
         }
 
         // command implementation

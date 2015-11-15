@@ -31,7 +31,7 @@ namespace StockFinder.model
         {
             using (var db = new StockContext())
             {
-                return (from r in (from s in db.Stocks orderby s.Date descending select s).Take(n) orderby r.Date ascending select r).ToList();
+                return (from r in ((from s in db.Stocks orderby s.Date descending select s).Take(n)) orderby r.Date ascending select r).ToList();
             }
         }
 
@@ -43,19 +43,100 @@ namespace StockFinder.model
                 st = (from r in (from s in db.Stocks orderby s.Date descending select s).Take(n + span - 1) orderby r.Date ascending select r).ToArray();
             }
 
-            StockSingleValue[] ssv = new StockSingleValue[n];
-            for(int i = 0; i < n; i++)
+            if(st.Length >= n)
             {
-                double sum = 0;
-                for(int j = 0; j < span; j++)
+                StockSingleValue[] ssv = new StockSingleValue[n];
+                for (int i = 0; i < n; i++)
                 {
-                    sum += st[i + j].Close;
+                    double sum = 0;
+                    for (int j = 0; j < span; j++)
+                    {
+                        sum += st[i + j].Close;
+                    }
+                    ssv[i] = new StockSingleValue
+                    {
+                        Date = st[i + span - 1].Date,
+                        Value = sum / span
+                    };
                 }
-                ssv[i] = new StockSingleValue
+
+                return ssv;
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
+        public IEnumerable<StockSingleValue> GetStockSupportTrend(int n)
+        {
+            Stock[] st;
+            using (var db = new StockContext())
+            {
+                st = (from r in (from s in db.Stocks orderby s.Date descending select s).Take(n) orderby r.Date ascending select r).ToArray();
+            }
+
+            List<StockSingleValue> ssv = new List<StockSingleValue>();
+            StockSingleValue min = null;
+            StockSingleValue max = null;
+            int state = 0;
+            if(st.Length > 0)
+            {
+                foreach (var s in st)
                 {
-                    Date = st[i + span - 1].Date,
-                    Value = sum / span
-                };
+                    if (min == null)
+                    {
+                        min = new StockSingleValue();
+                        max = new StockSingleValue();
+                        min.Date = s.Date;
+                        min.Value = s.Low;
+                        max.Date = s.Date;
+                        max.Value = s.Low;
+                    }
+                    else
+                    {
+                        switch (state)
+                        {
+                            case 0: // downward
+                                if (min.Value >= s.Low)
+                                {
+                                    ssv.Add(new StockSingleValue { Date = min.Date, Value = Double.NaN });
+                                    min.Date = s.Date;
+                                    min.Value = s.Low;
+                                }
+                                else
+                                {
+                                    ssv.Add(min);
+                                    min = new StockSingleValue();
+                                    max.Date = s.Date;
+                                    max.Value = s.Low;
+                                    state = 1;
+                                }
+                                break;
+
+                            case 1: // upward
+                                if (max.Value < s.Low)
+                                {
+                                    ssv.Add(new StockSingleValue { Date = max.Date, Value = Double.NaN });
+                                    max.Date = s.Date;
+                                    max.Value = s.Low;
+                                }
+                                else
+                                {
+                                    ssv.Add(new StockSingleValue { Date = max.Date, Value = Double.NaN });
+                                    min.Date = s.Date;
+                                    min.Value = s.Low;
+                                    state = 0;
+                                }
+                                break;
+
+                            default:
+                                throw new NotImplementedException();
+
+                        }
+                    }
+                }
             }
 
             return ssv;

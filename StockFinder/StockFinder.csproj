@@ -118,7 +118,7 @@
     </None>
     <AppDesigner Include="Properties\" />
     <None Include="stock_data_week.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

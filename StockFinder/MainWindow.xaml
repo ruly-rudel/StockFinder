@@ -35,7 +35,7 @@
                         <Setter Property="DrawMajorGridLines" Value="True"/>
                         <Setter Property="DrawMajorBands" Value="True"/>
                         <Setter Property="MinorsPerMajor" Value="5"/>
-                        <Setter Property="TextFormatting" Value="dd MMM yyyy"/>
+                        <Setter Property="TextFormatting" Value="MM yyyy"/>
                         <Setter Property="GrowBy" Value="0, 0"/>
                     </Style>
                 </s:SciStockChart.XAxisStyle>
@@ -47,19 +47,30 @@
                         <Setter Property="DrawMajorGridLines" Value="True"/>
                         <Setter Property="DrawMajorBands" Value="False"/>
                         <Setter Property="MinorsPerMajor" Value="5"/>
-                        <Setter Property="TextFormatting" Value="0.0000"/>
+                        <Setter Property="TextFormatting" Value="0"/>
+                        <Setter Property="GrowBy" Value="0.3,0.0" />
                     </Style>
                 </s:SciStockChart.YAxisStyle>
 
                 <s:SciStockChart.YAxes>
-                    <s:NumericAxis Id="RightAxis" AxisAlignment="Right" GrowBy="0.3, 0.0" />
+                    <!--<s:NumericAxis Id="RightAxis" AxisAlignment="Right" GrowBy="0.3, 0.0" />-->
                     <s:NumericAxis Id="LeftAxis" AxisAlignment="Left" GrowBy="0.0, 3.0" />
                 </s:SciStockChart.YAxes>
 
                 <s:SciStockChart.RenderableSeries>
-                    <s:FastCandlestickRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphOHLC}" YAxisId="RightAxis"/>
-                    <s:FastLineRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphMA30}" YAxisId="RightAxis"/>
-                    <s:FastLineRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphMA10}" YAxisId="RightAxis"/>
+                    <s:FastCandlestickRenderableSeries AntiAliasing="False" DataSeries="{Binding StockGraphOHLC}"/>
+                    
+                    <s:FastLineRenderableSeries DataSeries="{Binding StockGraphMA30}" SeriesColor="#FF279B27" StrokeThickness="2"/>
+                    <s:FastLineRenderableSeries DataSeries="{Binding StockGraphMA10}" SeriesColor="#FFFC9C29" StrokeThickness="2"/>
+                    <!--<s:FastLineRenderableSeries DataSeries="{Binding StockGraphMin}"  SeriesColor="#FF4083B7" StrokeThickness="2"/>-->
+
+                    <s:XyScatterRenderableSeries DataSeries="{Binding StockGraphMin}">
+                        <s:XyScatterRenderableSeries.PointMarker>
+                            <s:EllipsePointMarker Width="9" Height="9" Fill="SteelBlue" Stroke="LightSteelBlue" StrokeThickness="2">
+                            </s:EllipsePointMarker>
+                        </s:XyScatterRenderableSeries.PointMarker>
+                    </s:XyScatterRenderableSeries>
+
                     <s:FastColumnRenderableSeries DataSeries="{Binding StockGraphVolume}" YAxisId="LeftAxis"/>
                 </s:SciStockChart.RenderableSeries>
 
