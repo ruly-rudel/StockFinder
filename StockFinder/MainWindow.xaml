@@ -15,7 +15,8 @@
         </Grid.RowDefinitions>
         <Menu Grid.Row="0">
             <MenuItem Header="File">
-                <MenuItem Header="Import..." Command="{Binding CmdImport}"/>
+                <MenuItem Header="Import csv" Command="{Binding CmdImportCsv}"/>
+                <MenuItem Header="Import zip" Command="{Binding CmdImportZip}"/>
                 <Separator />
                 <MenuItem Header="Quit" />
             </MenuItem>
@@ -89,6 +90,8 @@
                 </ListView.View>
             </ListView>
         </Grid>
-        <StatusBar x:Name="MainStatusBar" Grid.Row="2" />
+        <StatusBar x:Name="MainStatusBar" Grid.Row="2">
+            <TextBlock Text="{Binding StatusBarText}" />
+        </StatusBar>
     </Grid>
 </Window>
