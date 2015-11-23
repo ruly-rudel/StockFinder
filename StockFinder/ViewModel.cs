@@ -9,6 +9,7 @@ using StockFinder.util;
 using StockFinder.model;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.Win32;
 
 namespace StockFinder.viewmodel
 {
@@ -29,6 +30,14 @@ namespace StockFinder.viewmodel
             private set { _StatusBarText = value; OnPropertyChanged(); }
         }
 
+        private int _StockNum;
+        public int StockNum
+        {
+            get { return _StockNum; }
+            set { _StockNum = value; initialize(value); OnPropertyChanged(); }
+        }
+        public ObservableCollection<int> AllStockValue { get; set; } = new ObservableCollection<int>();
+
         public ICommand CmdImportCsv { get; private set; }
         public ICommand CmdImportZip { get; private set; }
 
@@ -40,12 +49,16 @@ namespace StockFinder.viewmodel
         {
             CmdImportCsv = new RelayCommand(importCsv);
             CmdImportZip = new RelayCommand(importZip);
-            initialize();
+            foreach(var i in _m.GetAllStockList())
+            {
+                AllStockValue.Add(i);
+            }
+            StockNum = 5911;
             StatusBarText = "Ok.";
         }
 
 
-        private void initialize()
+        private void initialize(int num)
         {
             StockTable.Clear();
             StockGraphMA30.Clear();
@@ -54,9 +67,9 @@ namespace StockFinder.viewmodel
             StockGraphVolume.Clear();
             StockGraphOHLC.Clear();
 
-            int n = 200;
+            int n = 180;
 
-            foreach (var i in _m.GetStockTable(0, n))
+            foreach (var i in _m.GetStockTable(num, n))
             {
                 StockTable.Add(i);
             }
@@ -73,7 +86,7 @@ namespace StockFinder.viewmodel
                 from x in StockTable select x.Volume
             );
 
-            var ssa = _m.GetStockMovingAverage(0, 30, n);
+            var ssa = _m.GetStockMovingAverage(num, 150, n);
             if(ssa != null)
             {
                 StockGraphMA30.Append(
@@ -82,7 +95,7 @@ namespace StockFinder.viewmodel
                 );
             }
 
-            var ssa10 = _m.GetStockMovingAverage(0, 10, n);
+            var ssa10 = _m.GetStockMovingAverage(num, 50, n);
             if(ssa10 != null)
             {
                 StockGraphMA10.Append(
@@ -91,7 +104,8 @@ namespace StockFinder.viewmodel
                 );
             }
 
-            var min = _m.GetStockSupportTrend(0, n);
+            /*
+            var min = _m.GetStockSupportTrend(num, n);
             if(min.Count() > 0)
             {
                 StockGraphMin.Append(
@@ -99,21 +113,38 @@ namespace StockFinder.viewmodel
                     from x in min select x.Value
                 );
             }
+            */
         }
 
         // command implementation
         private void importCsv()
         {
-            _m.Import("stock_data_week.csv", 0);
+            var dlg = new OpenFileDialog();
+            dlg.DefaultExt = ".csv";
+            dlg.Filter = "CSV File (.csv)|*.csv";
 
-            initialize();
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if (result == true)
+            {
+                _m.Import(dlg.FileName, 0);
+                initialize(StockNum);
+            }
+
         }
 
         private void importZip()
         {
-            foreach(var i in _m.ImportZip("2014.zip"))
+            var dlg = new OpenFileDialog();
+            dlg.DefaultExt = ".zip";
+            dlg.Filter = "ZIP Archive File (.zip)|*.zip";
+
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if (result == true)
             {
-                StatusBarText = i;
+                _m.ImportZip(dlg.FileName);
+                initialize(StockNum);
             }
         }
 

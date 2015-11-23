@@ -73,6 +73,16 @@ namespace StockFinder.model
 
         }
 
+        public IEnumerable<int> GetAllStockList()
+        {
+            using (var db = new StockContext())
+            {
+                Stock[] st = (from s in db.Stocks orderby s.Date descending select s).Take(1).ToArray();
+                DateTime dt = st[0].Date;
+                return (from s in db.Stocks where s.Date == dt select s.Code).ToList(); 
+            }
+        }
+
         public IEnumerable<StockSingleValue> GetStockSupportTrend(int code, int n)
         {
             Stock[] st;
@@ -176,14 +186,15 @@ namespace StockFinder.model
             return;
         }
 
-        public IEnumerable<string> ImportZip(string n)
+        public void ImportZip(string n)
         {
-            using (var db = new StockContext())
             using (var zs = new FileStream(n, FileMode.Open))
             using (var ziparc = new ZipArchive(zs))
             {
+                /*
                 string sql = "Insert Into Stocks ( Code, Date, Period, \"Open\", High, Low, \"Close\", Volume ) " +
                           "Values (@Code,@Date,@Period,@Open,@High,@Low,@Close,@Volume) ";
+                          */
 
                 foreach (var i in ziparc.Entries)
                 {
@@ -199,45 +210,51 @@ namespace StockFinder.model
                                     {
                                         var line = ent.ReadLine().TrimEnd('\t');
                                         DateTime dt = DateTime.ParseExact(line, "yyyyMMdd", null);
-                                        yield return dt.ToShortDateString();
                                         Console.Out.WriteLine(dt.ToShortDateString());
 
                                         using (var cr = new CsvReader(ent))
+                                        using (var db = new StockContext())
                                         {
                                             cr.Configuration.RegisterClassMap<StockTabMap>();
                                             cr.Configuration.Delimiter = "\t";
                                             cr.Configuration.Encoding = Encoding.GetEncoding(932);
                                             while (cr.Read())
                                             {
-                                                var r = cr.GetRecord<StockTab>();
-                                                db.Database.ExecuteSqlCommand(sql,
-                                                    new SqlParameter("Code", r.Code),
-                                                    new SqlParameter("Date", dt),
-                                                    new SqlParameter("Period", 1),
-                                                    new SqlParameter("Open", (float)r.Open),
-                                                    new SqlParameter("High", (float)r.High),
-                                                    new SqlParameter("Low", (float)r.Low),
-                                                    new SqlParameter("Close", (float)r.Close),
-                                                    new SqlParameter("Volume", (float)r.Volume)
-                                                    );
-                                                /*
-                                                var d = new Stock
+                                                try
                                                 {
-                                                    Code = (int)r.Code,
-                                                    Date = dt,
-                                                    Period = 1,
-                                                    Open = r.Open,
-                                                    High = r.High,
-                                                    Low = r.Low,
-                                                    Close = r.Close,
-                                                    Volume = r.Volume
-                                                };
-                                                db.Stocks.Add(d);
-                                                */
+                                                    var r = cr.GetRecord<StockTab>();
+                                                    /*
+                                                    db.Database.ExecuteSqlCommand(sql,
+                                                        new SqlParameter("Code", r.Code),
+                                                        new SqlParameter("Date", dt),
+                                                        new SqlParameter("Period", 1),
+                                                        new SqlParameter("Open", (float)r.Open),
+                                                        new SqlParameter("High", (float)r.High),
+                                                        new SqlParameter("Low", (float)r.Low),
+                                                        new SqlParameter("Close", (float)r.Close),
+                                                        new SqlParameter("Volume", (float)r.Volume)
+                                                        );
+                                                        */
+                                                    var d = new Stock
+                                                    {
+                                                        Code = (int)r.Code,
+                                                        Date = dt,
+                                                        Period = 1,
+                                                        Open = r.Open,
+                                                        High = r.High,
+                                                        Low = r.Low,
+                                                        Close = r.Close,
+                                                        Volume = r.Volume
+                                                    };
+                                                    db.Stocks.Add(d);
+                                                } catch (CsvHelperException e)
+                                                {
+                                                    Console.Out.WriteLine("CVS conversion error at " + cr.Row + ": " + e.Message);
+                                                }
                                             }
+                                            db.SaveChanges();
                                         }
                                     }
-//                                    db.SaveChanges();
                                 }
                             }
 
