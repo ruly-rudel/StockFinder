@@ -35,8 +35,13 @@ namespace StockFinder.model
         {
             using (var db = new StockContext())
             {
-                return (from r in ((from s in db.Stocks where s.Code == code orderby s.Date descending select s).Take(n)) orderby r.Date ascending select r).ToList();
+                return getStockTable(db, code, n);
             }
+        }
+
+        private IEnumerable<Stock> getStockTable(StockContext db, int code, int n)
+        {
+            return (from r in ((from s in db.Stocks where s.Code == code orderby s.Date descending select s).Take(n)) orderby r.Date ascending select r).ToList();
         }
 
         public IEnumerable<StockSingleValue> GetStockMovingAverage(int code, int span, int n)
@@ -47,20 +52,16 @@ namespace StockFinder.model
                 st = (from r in (from s in db.Stocks where s.Code == code orderby s.Date descending select s).Take(n + span - 1) orderby r.Date ascending select r).ToArray();
             }
 
-            if(st.Length >= n)
+            if(st.Length >= n + span - 1)
             {
                 StockSingleValue[] ssv = new StockSingleValue[n];
                 for (int i = 0; i < n; i++)
                 {
-                    double sum = 0;
-                    for (int j = 0; j < span; j++)
-                    {
-                        sum += st[i + j].Close;
-                    }
+                    double sum = getCloseAverage(st, i, span);
                     ssv[i] = new StockSingleValue
                     {
                         Date = st[i + span - 1].Date,
-                        Value = sum / span
+                        Value = sum
                     };
                 }
 
@@ -73,13 +74,86 @@ namespace StockFinder.model
 
         }
 
+        private double getCloseAverage(Stock[] list, int pos, int span)
+        {
+            double sum = 0;
+            for (int j = 0; j < span; j++)
+            {
+                sum += list[pos + j].Close;
+            }
+            return sum / (double)span;
+        }
+
+        public string GetMarketStage()
+        {
+            int up = 0;
+            int down = 0;
+            int stay = 0;
+            foreach (var code in GetAllStockList())
+            {
+                var list = GetStockTable(code, 150).ToArray();
+                if (list.Length >= 150)
+                {
+                    double longma = getCloseAverage(list, 0, 150);
+                    //double shortma = getCloseAverage(list, 100, 50);
+                    Console.Out.WriteLine("code: " + code + ", MA: " + longma + ", High: " + list[149].High + ", Low: " + list[149].Low);
+                    if (list[149].Low > longma && (list[149].Close - list[0].Close) > list[0].Close * 0.005)
+                    {
+                        up++;
+                    }
+                    else if (longma > list[149].High && (list[149].Close - list[0].Close) < -list[0].Close * 0.005)
+                    {
+                        down++;
+                    }
+                    else
+                    {
+                        stay++;
+                    }
+                }
+            }
+            return "UP : " + up.ToString() + ", Down: " + down.ToString() + ", Stay: " + stay + ".";
+        }
+
         public IEnumerable<int> GetAllStockList()
         {
             using (var db = new StockContext())
             {
                 Stock[] st = (from s in db.Stocks orderby s.Date descending select s).Take(1).ToArray();
-                DateTime dt = st[0].Date;
-                return (from s in db.Stocks where s.Date == dt select s.Code).ToList(); 
+                if(st.Length != 0)
+                {
+                    DateTime dt = st[0].Date;
+                    return (from s in db.Stocks where s.Date == dt select s.Code).ToList();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        public IEnumerable<StockSingleValue> GetStockRelativeStrength(int code, int n)
+        {
+            var nikkei225 = GetStockTable(1001, n).ToArray();
+            var target = GetStockTable(code, n).ToArray();
+
+            if(nikkei225.Length == n && target.Length == n)
+            {
+                List<StockSingleValue> r = new List<StockSingleValue>();
+                for (int i = 0; i < n; i++)
+                {
+                    r.Add(new StockSingleValue
+                        {
+                            Date = target[i].Date,
+                            Value = target[i].Close / nikkei225[i].Close
+                        }
+                    );
+                }
+
+                return r;
+            }
+            else
+            {
+                return null;
             }
         }
 
@@ -218,6 +292,7 @@ namespace StockFinder.model
                                             cr.Configuration.RegisterClassMap<StockTabMap>();
                                             cr.Configuration.Delimiter = "\t";
                                             cr.Configuration.Encoding = Encoding.GetEncoding(932);
+                                            cr.Configuration.HasHeaderRecord = false;
                                             while (cr.Read())
                                             {
                                                 try

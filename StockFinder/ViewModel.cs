@@ -22,6 +22,7 @@ namespace StockFinder.viewmodel
         public XyDataSeries<DateTime, double> StockGraphMA30 { get; } = new XyDataSeries<DateTime, double>();
         public XyDataSeries<DateTime, double> StockGraphMA10 { get; } = new XyDataSeries<DateTime, double>();
         public XyDataSeries<DateTime, double> StockGraphMin { get; } = new XyDataSeries<DateTime, double>();
+        public XyDataSeries<DateTime, double> StockGraphRS { get; } = new XyDataSeries<DateTime, double>();
 
         private string _StatusBarText;
         public string StatusBarText
@@ -40,6 +41,7 @@ namespace StockFinder.viewmodel
 
         public ICommand CmdImportCsv { get; private set; }
         public ICommand CmdImportZip { get; private set; }
+        public ICommand CmdMarketTrend { get; private set; }
 
         // member variables
         private Model _m = ModelSingleton.Instance;
@@ -49,16 +51,19 @@ namespace StockFinder.viewmodel
         {
             CmdImportCsv = new RelayCommand(importCsv);
             CmdImportZip = new RelayCommand(importZip);
-            foreach(var i in _m.GetAllStockList())
+            CmdMarketTrend = new RelayCommand(getMarketTrend);
+            if(_m.GetAllStockList() != null)
             {
-                AllStockValue.Add(i);
+                foreach (var i in _m.GetAllStockList())
+                {
+                    AllStockValue.Add(i);
+                }
             }
             StockNum = 5911;
-            StatusBarText = "Ok.";
         }
 
 
-        private void initialize(int num)
+        private void initialize(int code)
         {
             StockTable.Clear();
             StockGraphMA30.Clear();
@@ -66,10 +71,11 @@ namespace StockFinder.viewmodel
             StockGraphMin.Clear();
             StockGraphVolume.Clear();
             StockGraphOHLC.Clear();
+            StockGraphRS.Clear();
 
             int n = 180;
 
-            foreach (var i in _m.GetStockTable(num, n))
+            foreach (var i in _m.GetStockTable(code, n))
             {
                 StockTable.Add(i);
             }
@@ -86,7 +92,7 @@ namespace StockFinder.viewmodel
                 from x in StockTable select x.Volume
             );
 
-            var ssa = _m.GetStockMovingAverage(num, 150, n);
+            var ssa = _m.GetStockMovingAverage(code, 150, n);
             if(ssa != null)
             {
                 StockGraphMA30.Append(
@@ -95,7 +101,7 @@ namespace StockFinder.viewmodel
                 );
             }
 
-            var ssa10 = _m.GetStockMovingAverage(num, 50, n);
+            var ssa10 = _m.GetStockMovingAverage(code, 50, n);
             if(ssa10 != null)
             {
                 StockGraphMA10.Append(
@@ -103,6 +109,16 @@ namespace StockFinder.viewmodel
                     from x in ssa10 select x.Value
                 );
             }
+
+            var rs = _m.GetStockRelativeStrength(code, n);
+            if (rs != null)
+            {
+                StockGraphRS.Append(
+                    from x in rs select x.Date,
+                    from x in rs select x.Value
+                );
+            }
+
 
             /*
             var min = _m.GetStockSupportTrend(num, n);
@@ -146,6 +162,11 @@ namespace StockFinder.viewmodel
                 _m.ImportZip(dlg.FileName);
                 initialize(StockNum);
             }
+        }
+
+        private void getMarketTrend()
+        {
+            StatusBarText = _m.GetMarketStage();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

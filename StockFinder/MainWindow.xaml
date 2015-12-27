@@ -21,6 +21,9 @@
                 <Separator />
                 <MenuItem Header="Quit" />
             </MenuItem>
+            <MenuItem Header="Statistic">
+                <MenuItem Header="Market Trend" Command="{Binding CmdMarketTrend}"/>
+            </MenuItem>
         </Menu>
         <StackPanel Grid.Row="1" >
             <ComboBox ItemsSource="{Binding AllStockValue}" SelectedValue="{Binding StockNum}" IsEditable="True"/>
@@ -53,13 +56,14 @@
                         <Setter Property="DrawMajorBands" Value="False"/>
                         <Setter Property="MinorsPerMajor" Value="5"/>
                         <Setter Property="TextFormatting" Value="0"/>
-                        <Setter Property="GrowBy" Value="0.3,0.0" />
+                        <Setter Property="GrowBy" Value="0.6,0.0" />
                     </Style>
                 </s:SciStockChart.YAxisStyle>
 
                 <s:SciStockChart.YAxes>
                     <!--<s:NumericAxis Id="RightAxis" AxisAlignment="Right" GrowBy="0.3, 0.0" />-->
                     <s:NumericAxis Id="LeftAxis" AxisAlignment="Left" GrowBy="0.0, 3.0" />
+                    <s:NumericAxis Id="LeftAxis2" AxisAlignment="Left" GrowBy="1.0, 3.0" />
                 </s:SciStockChart.YAxes>
 
                 <s:SciStockChart.RenderableSeries>
@@ -67,6 +71,7 @@
                     
                     <s:FastLineRenderableSeries DataSeries="{Binding StockGraphMA30}" SeriesColor="#FF279B27" StrokeThickness="2"/>
                     <s:FastLineRenderableSeries DataSeries="{Binding StockGraphMA10}" SeriesColor="#FFFC9C29" StrokeThickness="2"/>
+                    <s:FastLineRenderableSeries DataSeries="{Binding StockGraphRS}" SeriesColor="Violet" StrokeThickness="2" YAxisId="LeftAxis2" />
                     <!--<s:FastLineRenderableSeries DataSeries="{Binding StockGraphMin}"  SeriesColor="#FF4083B7" StrokeThickness="2"/>-->
 
                     <s:XyScatterRenderableSeries DataSeries="{Binding StockGraphMin}">
