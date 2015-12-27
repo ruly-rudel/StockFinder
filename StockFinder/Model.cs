@@ -136,7 +136,7 @@ namespace StockFinder.model
             var nikkei225 = GetStockTable(1001, n).ToArray();
             var target = GetStockTable(code, n).ToArray();
 
-            if(nikkei225.Length == n && target.Length == n)
+            if(nikkei225.Length == n && target.Length == n && nikkei225[n-1].Date == target[n-1].Date)
             {
                 List<StockSingleValue> r = new List<StockSingleValue>();
                 for (int i = 0; i < n; i++)

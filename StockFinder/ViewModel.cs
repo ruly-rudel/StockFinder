@@ -10,6 +10,7 @@ using StockFinder.model;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Win32;
+using Abt.Controls.SciChart;
 
 namespace StockFinder.viewmodel
 {
@@ -45,10 +46,13 @@ namespace StockFinder.viewmodel
 
         // member variables
         private Model _m = ModelSingleton.Instance;
+        private SciStockChart _v = null;
 
         // constructor
-        public ViewModel()
+        public ViewModel(SciStockChart stockChart)
         {
+            this._v = stockChart;
+
             CmdImportCsv = new RelayCommand(importCsv);
             CmdImportZip = new RelayCommand(importZip);
             CmdMarketTrend = new RelayCommand(getMarketTrend);
@@ -61,7 +65,6 @@ namespace StockFinder.viewmodel
             }
             StockNum = 5911;
         }
-
 
         private void initialize(int code)
         {
@@ -118,7 +121,6 @@ namespace StockFinder.viewmodel
                     from x in rs select x.Value
                 );
             }
-
 
             /*
             var min = _m.GetStockSupportTrend(num, n);

@@ -11,7 +11,7 @@ namespace StockFinder
         public MainWindow()
         {
             InitializeComponent();
-            var vm = new ViewModel();
+            var vm = new ViewModel(stockChart);
             this.DataContext = vm;
             //stockChart.RenderableSeries[0].DataSeries = vm.StockGraphOHLC;
             //stockChart.RenderableSeries[1].DataSeries = vm.StockGraphMA;

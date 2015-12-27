@@ -57,13 +57,14 @@
                         <Setter Property="MinorsPerMajor" Value="5"/>
                         <Setter Property="TextFormatting" Value="0"/>
                         <Setter Property="GrowBy" Value="0.6,0.0" />
+                        <Setter Property="AutoRange" Value="Always" />
                     </Style>
                 </s:SciStockChart.YAxisStyle>
 
                 <s:SciStockChart.YAxes>
                     <!--<s:NumericAxis Id="RightAxis" AxisAlignment="Right" GrowBy="0.3, 0.0" />-->
-                    <s:NumericAxis Id="LeftAxis" AxisAlignment="Left" GrowBy="0.0, 3.0" />
-                    <s:NumericAxis Id="LeftAxis2" AxisAlignment="Left" GrowBy="1.0, 3.0" />
+                    <s:NumericAxis Id="LeftAxis" AxisAlignment="Left" GrowBy="0.0, 3.0" AutoRange="Always"/>
+                    <s:NumericAxis Id="LeftAxis2" AxisAlignment="Left" GrowBy="1.0, 3.0" AutoRange="Always"/>
                 </s:SciStockChart.YAxes>
 
                 <s:SciStockChart.RenderableSeries>
@@ -82,6 +83,7 @@
                     </s:XyScatterRenderableSeries>
 
                     <s:FastColumnRenderableSeries DataSeries="{Binding StockGraphVolume}" YAxisId="LeftAxis"/>
+                    
                 </s:SciStockChart.RenderableSeries>
 
             </s:SciStockChart>
